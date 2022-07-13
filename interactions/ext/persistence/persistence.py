@@ -83,9 +83,9 @@ class Persistence(Extension):
             pid = PersistentCustomID.from_discord(self._cipher, ctx.custom_id)
         except JSONDecodeError:
             logging.info("Interaction made with invalid persistent custom_id. Skipping.")
-        
-        if pid.tag in self._component_callbacks:
-            await self._component_callbacks[pid.tag](ctx, pid.package)
+        else:
+            if pid.tag in self._component_callbacks:
+                await self._component_callbacks[pid.tag](ctx, pid.package)
 
     @extension_listener
     async def on_modal(self, ctx: CommandContext):
@@ -100,11 +100,11 @@ class Persistence(Extension):
             pid = PersistentCustomID.from_discord(self._cipher, ctx.data.custom_id)
         except JSONDecodeError:
             logging.info("Interaction made with invalid persistent custom_id. Skipping.")
-        
-        if callback := self._modal_callbacks.get(pid.tag):
-            if callback[1] == 0:
-                args = [item["components"][0]["value"] for item in ctx.data.components]
-                await self._modal_callbacks[pid.tag][0](ctx, pid.package, *args)
-            else:
-                kwargs = {item["components"][0]["custom_id"]: item["components"][0]["value"] for item in ctx.data.components}
-                await self._modal_callbacks[pid.tag][0](ctx, pid.package, **kwargs)
+        else:
+            if callback := self._modal_callbacks.get(pid.tag):
+                if callback[1] == 0:
+                    args = [item["components"][0]["value"] for item in ctx.data.components]
+                    await self._modal_callbacks[pid.tag][0](ctx, pid.package, *args)
+                else:
+                    kwargs = {item["components"][0]["custom_id"]: item["components"][0]["value"] for item in ctx.data.components}
+                    await self._modal_callbacks[pid.tag][0](ctx, pid.package, **kwargs)
